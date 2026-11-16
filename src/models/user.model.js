@@ -50,10 +50,10 @@ const userSchema = new Schema({
 
 }, {timestamps: true})
 
-userSchema.pre("save", async function(next){
-    if(!this.isModified("password")) return next();
-    this.password = bcrypt.hash(this.password, 10)
-    next()
+// Mongoose 9 no longer passes `next` to pre hooks: an async function just returns
+userSchema.pre("save", async function () {
+    if (!this.isModified("password")) return;
+    this.password = await bcrypt.hash(this.password, 10)
 })
 
 userSchema.methods.isPasswordCorrect = async function(password){
@@ -63,7 +63,7 @@ userSchema.methods.isPasswordCorrect = async function(password){
 
 userSchema.methods.generateAccessToken = function()
 {
-jwt.sign({
+return jwt.sign({
     _id: this._id,
     email: this.email,
     username: this.username,
@@ -78,7 +78,7 @@ jwt.sign({
 }
 //REFRESH TOKEN HAS LESS INFORMATION 
 userSchema.methods.generateRefreshToken = function(){
-jwt.sign({
+return jwt.sign({
     _id: this._id,
     
 }, 
